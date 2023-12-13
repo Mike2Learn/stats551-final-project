@@ -10,15 +10,19 @@ from data_preparation import lr_data_prep
 
 # Read in and preprocess the data
 df = pd.read_csv('../data/UserBehavior-Without-Timestamp.csv').iloc[:, 1:]
-# df = df[df['ItemCategoryID'] == 569703]
+df2 = df[df['ItemCategoryID'] == 4086613]
 df = lr_data_prep(df)
+df2 = lr_data_prep(df2)
+
 
 # Split into training and test data
-X = df[['pv', 'cart', 'fav', 'pv_cart', 'pv_fav', 'cart_fav', 'pv_cart_fav']]
-# X = df[['pv', 'cart', 'fav']]
-y = df['buy']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=551)
+def prepare_train_test_data(df):
+    X = df[['pv', 'cart', 'fav', 'pv_cart', 'pv_fav', 'cart_fav', 'pv_cart_fav']]
+    # X = df[['pv', 'cart', 'fav']]
+    y = df['buy']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=551)
 
+    return X_train, X_test, y_train, y_test
 
 # Train a logistic regression model on training data
 def train_lr(X_train, y_train):
@@ -26,8 +30,14 @@ def train_lr(X_train, y_train):
     lr.fit(X_train, y_train)
     y_train_pred = lr.predict(X_train)
 
-    print(precision_score(y_train, y_train_pred))
-    print(recall_score(y_train, y_train_pred))
+    train_accuracy = accuracy_score(y_train, y_train_pred)
+    train_precision = precision_score(y_train, y_train_pred)
+    train_recall = recall_score(y_train, y_train_pred)
+
+    print("Train Accuracy:", train_accuracy)
+    print("Train Precision:", train_precision)
+    print("Train Recall:", train_recall)
+
     return lr
 
 
@@ -49,8 +59,8 @@ def evaluate_lr(lr_result, X_test, y_test):
 
     # Print evaluation metrics
     print("Test Accuracy:", test_accuracy)
-    print("Precision:", precision)
-    print("Recall:", recall)
+    print("Test Precision:", precision)
+    print("Test Recall:", recall)
     print("AUC:", roc_auc)
 
     # Print model parameters (coefficients)
@@ -60,5 +70,9 @@ def evaluate_lr(lr_result, X_test, y_test):
 
 
 if __name__ == '__main__':
+    X_train, X_test, y_train, y_test = prepare_train_test_data(df2)
     lr_model = train_lr(X_train, y_train)
     evaluate_lr(lr_model, X_test, y_test)
+
+    X_train_2, X_test_2, y_train_2, y_test_2 = prepare_train_test_data(df2)
+    # evaluate_lr(lr_model, X_test_2, y_test_2)

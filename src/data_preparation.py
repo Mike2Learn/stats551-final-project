@@ -22,7 +22,7 @@ def lr_data_prep(input_df):
     behavior_mapping = {True: 1, None: 0}
     for col in ['buy', 'cart', 'fav', 'pv']:
         input_df[col] = input_df[col].map(behavior_mapping).fillna(0)
-
+    input_df = input_df.groupby(['UserID', 'ItemID']).sum()
     # Remove Category column
     input_df = input_df.drop('ItemCategoryID', axis=1)
 
@@ -39,10 +39,12 @@ def extract_unpopular_items(input_df):
     ItemCategory = input_df['ItemCategoryID']
     ItemCategory_counts = ItemCategory.value_counts()
 
-    filtered_Categories = ItemCategory_counts[(ItemCategory_counts>100) & (ItemCategory_counts<200)]
-    print(filtered_Categories)
+    filtered_Categories = ItemCategory_counts[(ItemCategory_counts>100) & (ItemCategory_counts<300)]
+    print(filtered_Categories.head(10))
 
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/UserBehavior-Without-Timestamp.csv').iloc[:, 1:]
+    print(df.shape)
+    # print(lr_data_prep(df))
     extract_unpopular_items(df)
